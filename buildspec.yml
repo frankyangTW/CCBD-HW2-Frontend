@@ -1,0 +1,10 @@
+version: 0.1
+phases:
+  pre_build:
+    commands:
+  build:
+    commands:
+artifacts:
+  files:
+    - '**/*'
+  base-directory: .
