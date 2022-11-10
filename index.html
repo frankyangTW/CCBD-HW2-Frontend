@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript" src="lib/axios/dist/axios.standalone.js"></script>
+    <script type="text/javascript" src="lib/CryptoJS/rollups/hmac-sha256.js"></script>
+    <script type="text/javascript" src="lib/CryptoJS/rollups/sha256.js"></script>
+    <script type="text/javascript" src="lib/CryptoJS/components/hmac.js"></script>
+    <script type="text/javascript" src="lib/CryptoJS/components/enc-base64.js"></script>
+    <script type="text/javascript" src="lib/url-template/url-template.js"></script>
+    <script type="text/javascript" src="lib/apiGatewayCore/sigV4Client.js"></script>
+    <script type="text/javascript" src="lib/apiGatewayCore/apiGatewayClient.js"></script>
+    <script type="text/javascript" src="lib/apiGatewayCore/simpleHttpClient.js"></script>
+    <script type="text/javascript" src="lib/apiGatewayCore/utils.js"></script>
+    <script type="text/javascript" src="apigClient.js"></script>
+    <!-- <script type="text/javascript" src="speechRecognition.js"></script> -->
+    <script>
+      // A utility function to create HTML.
+      function getHtml(template) {
+        return template.join('\n');
+      }
+
+      function searchPhotos() {
+        var apigClient = apigClientFactory.newClient();
+        var apigClient = apigClientFactory.newClient({
+          accessKey: 'ACCESS_KEY',
+          secretKey: 'SECRET_KEY',
+        });
+        var apigClient = apigClientFactory.newClient({
+          accessKey: 'ACCESS_KEY',
+          secretKey: 'SECRET_KEY',
+        });
+        var params = {
+          // This is where any modeled request parameters should be added.
+          // The key is the parameter name, as it is defined in the API in API Gateway.
+          q: document.getElementById('query').value,
+        };
+
+        var body = {
+          // This is where you define the body of the request,
+        };
+
+        var additionalParams = {
+          // If there are any unmodeled query parameters or headers that must be
+          //   sent with the request, add them here.
+          headers: {
+            'x-api-key': 'aM9ciwnXgI7nRV7q6lVkT4HpNqITRgsB1Jg4UvrE'
+          },
+          queryParams: {
+          }
+        };
+
+        apigClient.searchGet(params, body, additionalParams)
+            .then(function(result){
+              // Add success callback code here.
+              console.log(result.data)
+              var photos = result.data.map(function(photoUrl) {
+                  return getHtml([
+                    '<span>',
+                      '<div>',
+                        '<br/>',
+                        '<img style="width:128px;height:128px;" src="' + photoUrl + '"/>',
+                      '</div>',
+                    '</span>',
+                  ]);
+                });
+              var htmlTemplate = [
+                '<div>',
+                  getHtml(photos),
+                '</div>',
+              ]
+               document.getElementById('viewer').innerHTML = getHtml(htmlTemplate);
+            }).catch( function(result){
+              // Add error callback code here.
+              console.log("Error")
+            });
+      };
+
+
+    function uploadPhotos() {
+      var input = document.querySelector('input[type="file"]');
+      var filePath = input.value.split('\\');
+      var fileName = filePath[filePath.length - 1];
+      console.log(filePath[filePath.length - 1]);
+      console.log(document.getElementById('customLabels').value);
+
+      var apigClient = apigClientFactory.newClient();
+      var apigClient = apigClientFactory.newClient({
+        accessKey: 'ACCESS_KEY',
+        secretKey: 'SECRET_KEY',
+      });
+      var apigClient = apigClientFactory.newClient({
+        accessKey: 'ACCESS_KEY',
+        secretKey: 'SECRET_KEY',
+      });
+      
+      var params = {
+        // This is where any modeled request parameters should be added.
+        // The key is the parameter name, as it is defined in the API in API Gateway.
+        "object": filePath[filePath.length - 1],
+        "x-amz-meta-customLabels": document.getElementById('customLabels').value,
+      };
+
+
+      // var formData = new FormData();
+      // formData.append('file', input.files[0]);
+      // console.log(formData)
+      const file = input.files[0];
+      console.log(file)
+      // file.constructor = () => file;
+
+      // var body = {
+      //   // This is where you define the body of the request,
+      //   file
+      // };
+      // var body = file;
+
+      var additionalParams = {
+        // If there are any unmodeled query parameters or headers that must be
+        //   sent with the request, add them here.
+        headers: {
+          'Content-Type': "image/jpeg"
+        },
+        queryParams: {
+        }
+      };
+
+      fetch('https://pi62tvsg55.execute-api.us-east-1.amazonaws.com/prod/upload/' + fileName,
+          {
+              method: "put",
+              headers:{
+              "Content-Type": 'image/jpeg',
+              "x-amz-meta-customLabels": document.getElementById('customLabels').value,
+              },
+              body: file
+          }
+      )
+        .then((response) => response)
+        .then((result) => {
+          document.getElementById('uploadStatus').innerText = "Upload Succeed!";
+          document.getElementById('customLabels').value = "";
+          console.log('Success:', result);
+        })
+        .catch((error) => {
+          document.getElementById('uploadStatus').innerText = "Upload Failed!";
+          console.error('Error:', error);
+        });
+
+      // var reader = new FileReader();
+      // reader.onload = function(e) {
+      //   // binary data
+      //   // console.log(e.target.result);
+      //   var body = e.target.result;
+      //   apigClient.uploadObjectPut(params, body, additionalParams)
+      //     .then(function(result){
+      //       // Add success callback code here.
+      //        document.getElementById('uploadStatus').innerText = "Upload Succeed!";
+      //     }).catch( function(result){
+      //       // Add error callback code here.
+      //       document.getElementById('uploadStatus').innerText = "Upload Failed!";
+      //     });
+      // };
+      // reader.onerror = function(e) {
+      //   // error occurred
+      //   console.log('Error : ' + e.type);
+      // };
+      // reader.readAsBinaryString(file);
+
+
+      // apigClient.uploadObjectPut(params, body, additionalParams)
+      //     .then(function(result){
+      //       // Add success callback code here.
+      //        document.getElementById('uploadStatus').innerText = "Upload Succeed!";
+      //     }).catch( function(result){
+      //       // Add error callback code here.
+      //       document.getElementById('uploadStatus').innerText = "Upload Failed!";
+      //     });
+
+    };
+
+    function startSpeech() {
+      if ("webkitSpeechRecognition" in window) {
+        // Initialize webkitSpeechRecognition
+        let speechRecognition = new webkitSpeechRecognition();
+      
+        // String for the Final Transcript
+        let final_transcript = "";
+      
+        // Set the properties for the Speech Recognition object
+        speechRecognition.continuous = false;
+      //   speechRecognition.interimResults = true;
+      //   speechRecognition.lang = document.querySelector("#select_dialect").value;
+      
+        // Callback Function for the onStart Event
+        speechRecognition.onstart = () => {
+          // Show the Status Element
+          document.querySelector("#status").style.display = "block";
+        };
+        speechRecognition.onerror = () => {
+          // Hide the Status Element
+          document.querySelector("#status").style.display = "none";
+        };
+        speechRecognition.onend = () => {
+          // Hide the Status Element
+          document.querySelector("#status").style.display = "none";
+        };
+      
+        speechRecognition.onresult = (event) => {
+          // Create the interim transcript string locally because we don't want it to persist like final transcript
+          let interim_transcript = "";
+        
+          // Loop through the results from the speech recognition object.
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            // If the result item is Final, add it to Final Transcript, Else add it to Interim transcript
+            if (event.results[i].isFinal) {
+              final_transcript += event.results[i][0].transcript;
+            } else {
+              interim_transcript += event.results[i][0].transcript;
+            }
+          }
+          
+          // Set the Final transcript and Interim transcript.
+          console.log(final_transcript)
+          document.querySelector("#query").value = final_transcript;
+        };
+        // sleep time expects milliseconds
+        function sleep (time) {
+          return new Promise((resolve) => setTimeout(resolve, time));
+        }
+
+        speechRecognition.start()
+      } else {
+        console.log("Speech Recognition Not Available");
+      }
+    };
+
+    </script>
+  </head>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <body>
+    <h1>HW2</h1>
+    <h2>Search Photos</h2>
+    <div id="viewer"> </div>
+    <h3>Query</h3>
+    <h4>Example: dogs</h4>
+    <input type="text" id="query" name="query"><br><br>
+    <button onclick="searchPhotos()">Search</button>
+    <button id="start-button" class="button-xl" title="Start Transcription" onclick="startSpeech()">
+        <i class="fa fa-microphone"></i>
+    </button>
+    <p id="status" class="lead mt-3 text-light" style="display: none">Listening...</p>
+    <br><br><br>
+    <h2>Upload Photos</h2>
+    <input type="file" id="file"><br><br>
+    <h3>Custom Labels: (comma-separated) </h3>
+    <input type="text" id="customLabels" name="customLabels"><br><br>
+    <button onclick="uploadPhotos()">Upload</button>
+    <div id="uploadStatus"> </div>
+  </body>
+</html>
